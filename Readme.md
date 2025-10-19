@@ -162,6 +162,7 @@ O sistema foi construído com foco em modularização, separando claramente as *
 
 ### Desenvolvido por:
 **Rayane Alves**  
-**Beatriz**
+**Beatriz Figueiredo**
+
 Estudantes de Ciência da Computação — UFRPE  
 2025.2
