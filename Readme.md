@@ -1,6 +1,12 @@
 # Sistema de Reservas de Estações de Trabalho em Haskell
 
-![Haskell Logo](https://upload.wikimedia.org/wikipedia/commons/1/1c/Haskell-Logo.svg)
+
+<p align="center">
+  <img src="https://portais.univasf.edu.br/ppgadt/pesquisadores/matriculados/arquivos/turma-2024-arquivos/ufrpe-logo.png" alt="Logo da UFRPE" width="130" height="130" style="margin-right: 20px;">
+  <img src="https://yt3.googleusercontent.com/ytc/AIdro_laNsLYNFcXxU6RowxEG9ooxCiO6dJqFqS9yY_C1vnyTUY=s900-c-k-c0x00ffffff-no-rj" alt="Logo do Departamento de Computação da UFRPE" width="130" height="130">
+</p>
+
+
 
 ## Sumário
 - [Visão Geral](#visão-geral)
