@@ -1,20 +1,17 @@
 # Sistema de Reservas de Estações de Trabalho em Haskell
 
-
 <p align="center">
   <img src="https://portais.univasf.edu.br/ppgadt/pesquisadores/matriculados/arquivos/turma-2024-arquivos/ufrpe-logo.png" alt="Logo da UFRPE" width="130" height="130" style="margin-right: 20px;">
   <img src="https://yt3.googleusercontent.com/ytc/AIdro_laNsLYNFcXxU6RowxEG9ooxCiO6dJqFqS9yY_C1vnyTUY=s900-c-k-c0x00ffffff-no-rj" alt="Logo do Departamento de Computação da UFRPE" width="130" height="130">
 </p>
 
-
-
 ## Sumário
 - [Visão Geral](#visão-geral)
-- [Tipos e Estruturas](#tipos-e-estruturas)
-- [Fluxo Principal](#fluxo-principal-main)
-- [Menus](#menus)
+- [Arquitetura e Estrutura de Dados](#arquitetura-e-estrutura-de-dados)
+- [Fluxo Principal (Main)](#fluxo-principal-main)
+- [Menus e Navegação](#menus-e-navegação)
 - [Regras de Reserva](#regras-de-reserva)
-- [Funções de Negócio](#funções-de-negócio)
+- [Módulos e Funções de Negócio](#módulos-e-funções-de-negócio)
   - [Reservas](#reservas)
     - [Núcleo de Negócio](#reservas---núcleo-de-negócio)
     - [Interface (UI)](#reservas---interface-ui)
@@ -24,93 +21,147 @@
   - [Espaços](#espaços)
     - [Núcleo de Negócio](#espaços---núcleo-de-negócio)
     - [Interface (UI)](#espaços---interface-ui)
+- [Boas Práticas e Modularização](#boas-práticas-e-modularização)
 - [Observações Técnicas](#observações-técnicas)
 
 ---
 
 ## Visão Geral
 
-Sistema de reservas de estações de trabalho implementado em Haskell. Permite interação via terminal para:
-- Cadastro e alteração de estações
-- Registro e cancelamento de reservas
-- Consulta de disponibilidade
-- Gerenciamento de usuários
+O **Sistema de Reservas de Estações de Trabalho** é um projeto desenvolvido em **Haskell**, com interação via **terminal**, permitindo:
+- Cadastro e alteração de estações de trabalho;
+- Registro e cancelamento de reservas;
+- Consulta de disponibilidade por data e capacidade;
+- Gerenciamento de usuários.
 
-## Tipos e Estruturas
+O sistema foi construído com foco em modularização, separando claramente as **funções puras** (núcleo de negócio) das **operações de I/O** (interface com o usuário).
 
-- **Espaco**: estação de trabalho (`Id`, andar, número, capacidade)
-- **Usuario**: (`Id`, nome)
-- **Reserva**: (`Id`, `Usuario`, `Espaco`, `DataHora`)
-- **Banco**: estado do sistema — `([Espaco], [Usuario], [Reserva])`
+---
 
-## Fluxo Principal (`main`)
+## Arquitetura e Estrutura de Dados
 
-- Gera estações padrão (`gerarEstacoes`)
-- Define lista inicial de usuários
-- Chama `menuPrincipal` para iniciar interação
+### Tipos Principais
+- **Espaco**: representa uma estação de trabalho (`Id`, andar, número, capacidade);
+- **Usuario**: representa o usuário do sistema (`Id`, nome);
+- **Reserva**: representa uma reserva de estação (`Id`, `Usuario`, `Espaco`, `DataHora`);
+- **Banco**: representa o estado global do sistema — `([Espaco], [Usuario], [Reserva])`.
 
-## Menus
+### Estrutura Modular
+- `Main.hs`: controla o fluxo inicial e os menus principais.
+- `Espacos.hs`, `Usuarios.hs`, `Reservas.hs`: contêm as funções de negócio e de interface de cada domínio.
+- `Persistencia.hs`: responsável por salvar e carregar dados em arquivos de texto.
+- `Utils.hs`: funções auxiliares para formatação, validação e geração de IDs.
 
-- **Menu Principal**: escolha entre Administrador, Usuário ou Sair
-- **Menu Administrador**: gestão de estações, usuários e reservas
-- **Menu Usuário**: fazer/cancelar reservas, consultar estações, ver reservas próprias
+---
+
+## Fluxo Principal (Main)
+
+1. **Inicialização**
+   - Cria estações padrão via `gerarEstacoes`.
+   - Define lista inicial de usuários.
+   - Carrega reservas armazenadas, se existirem.
+
+2. **Execução**
+   - Exibe `menuPrincipal` para o usuário escolher o tipo de acesso.
+   - Redireciona para o menu correspondente (Administrador ou Usuário).
+
+3. **Encerramento**
+   - Salva o estado atualizado no arquivo de persistência antes de encerrar.
+
+---
+
+## Menus e Navegação
+
+### Menu Principal
+- Acesso como **Administrador**, **Usuário** ou **Encerrar**.
+
+### Menu do Administrador
+- Cadastrar, alterar e listar estações;
+- Cadastrar ou alterar usuários;
+- Gerenciar reservas.
+
+### Menu do Usuário
+- Fazer e cancelar reservas;
+- Consultar estações disponíveis;
+- Ver reservas pessoais.
+
+---
 
 ## Regras de Reserva
 
-- Um espaço só pode ser reservado se estiver disponível na data/hora
-- Usuários não existentes são cadastrados automaticamente
-- Cancelamento exige correspondência de ID e dono da reserva
+- Um **espaço** só pode ser reservado se estiver **livre** na data/hora informada;
+- O **usuário** é cadastrado automaticamente se não existir;
+- **Cancelamentos** exigem a correspondência entre o ID da reserva e o usuário responsável;
+- A **capacidade** pode ser usada como filtro para busca de estações.
 
-## Funções de Negócio
+---
+
+## Módulos e Funções de Negócio
 
 ### Reservas
 
 #### Núcleo de Negócio
-
-- `fazerReserva`: cria reserva se espaço estiver disponível
-- `cancelarReserva`: remove reserva existente
-- `espacosDisponiveis`: lista espaços livres em determinada data/hora
-- `getReservaId`: obtém ID de reserva
-- `novoId` (uso em reservas): gera próximo ID incremental
-- `capacidade` (referência): retorna capacidade de um espaço (detalhe em Espaços)
+- `fazerReserva`: cria uma reserva se o espaço estiver disponível.
+- `cancelarReserva`: remove uma reserva existente.
+- `espacosDisponiveis`: retorna todos os espaços livres em uma data/hora.
+- `getReservaId`: obtém o ID de uma reserva.
+- `novoId`: gera o próximo ID incremental para novas reservas.
 
 #### Interface (UI)
+- `fazerReservaUI`: coleta dados do usuário e chama `fazerReserva`.
+- `cancelarReservaUI`: solicita ID da reserva e executa o cancelamento.
+- `verDisponiveisPorQtdUI`: exibe espaços filtrados por capacidade.
+- `verMinhasReservasUI`: mostra as reservas do usuário logado.
 
-- `fazerReservaUI`: coleta dados do usuário, mostra opções e invoca `fazerReserva`
-- `cancelarReservaUI`: solicita ID e cancela reserva
-- `verDisponiveisPorQtdUI`: filtra e exibe estações por capacidade
-- `verMinhasReservasUI`: lista reservas do usuário
+---
 
 ### Usuários
 
 #### Núcleo de Negócio
-
-- `buscarUsuarioPorNome`: pesquisa por nome, ignorando maiúsculas/minúsculas (usada em `entradaUsuario`)
-- `alterarUsuario`: altera nome do usuário (usada em `menuAdministrador`)
-- `getIdUsuario`: retorna ID do usuário
-- `novoId` (uso em usuários): gera ID para novos usuários em `entradaUsuario`
+- `buscarUsuarioPorNome`: busca usuário ignorando maiúsculas/minúsculas.
+- `alterarUsuario`: atualiza dados de um usuário existente.
+- `getIdUsuario`: retorna o identificador de um usuário.
+- `novoId`: gera IDs para novos usuários.
 
 #### Interface (UI)
+- `entradaUsuario`: autentica ou cadastra novo usuário e redireciona ao menu.
+- Menus chamam funções de negócio conforme a escolha do usuário.
 
-- `entradaUsuario`: solicita nome, autentica ou cadastra usuário, encaminha para menuUsuario
-- Menus do Usuário e Administrador chamam funções de núcleo conforme opção selecionada
+---
 
 ### Espaços
 
 #### Núcleo de Negócio
-
-- `gerarEstacoes`: cria lista inicial de estações
-- `cadastrarEstacao`: adiciona nova estação
-- `alterarEstacao`: altera andar e número de estação existente
-- `capacidade`: retorna capacidade de um espaço
-- `getEspacoId`: retorna ID de uma estação
+- `gerarEstacoes`: gera lista inicial de estações.
+- `cadastrarEstacao`: adiciona uma nova estação.
+- `alterarEstacao`: atualiza número ou andar de uma estação.
+- `capacidade`: retorna capacidade de um espaço.
+- `getEspacoId`: obtém o ID de uma estação.
 
 #### Interface (UI)
+- As funções de UI de espaços são integradas aos menus administrativos, permitindo cadastro, alteração e visualização.
 
-- Funções de UI de Espaços estão integradas aos menus, exibindo informações filtradas e recebendo entrada do usuário
+---
+
+## Boas Práticas e Modularização
+
+- Uso de **funções de alta ordem** (`map`, `filter`) e **lambda expressions**;
+- Emprego de **compreensão de listas** para manipulação de coleções;
+- Estruturação em múltiplos módulos para maior legibilidade e manutenção.
+
+---
 
 ## Observações Técnicas
 
-- Funções de núcleo retornam dados puros ou `Either String Banco` em caso de erro
-- Funções de UI lidam apenas com I/O, chamando funções de núcleo quando necessário
-- `DataHora` é tratada como string no formato "DD-MM-AAAA HH:MM"
+- `DataHora` é tratada como `String` no formato `"DD-MM-AAAA HH:MM"`;
+- IDs são gerados de forma incremental;
+- O sistema é totalmente funcional sem dependências externas;
+- Ideal para execução em ambientes de terminal com GHCi.
+
+---
+
+### Desenvolvido por:
+**Rayane Alves**  
+**Beatriz**
+Estudantes de Ciência da Computação — UFRPE  
+2025.2
